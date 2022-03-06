@@ -1,0 +1,245 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabel Dosen</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    
+</head>
+<body>
+  <nav class="navbar navbar-expand-md bg-dark navbar-dark">
+    <!-- Brand -->
+    <a class="navbar-brand" href="#" style ="font-family: 'Times New Roman', Times, serif;">UAS</a>
+  
+    <!-- Toggler/collapsibe Button -->
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  
+    <!-- Navbar links -->
+    <div class="collapse navbar-collapse" id="collapsibleNavbar">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="dosen.html">Dosen</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="mahasiswa.html">Mahasiswa</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="absensi.html">Absensi</a>
+        </li>
+        
+      </ul>
+    </div>
+  </nav>
+
+    <div id="app">
+
+        <div class="container">
+            <div class="py-5 text-center">
+              <h2>Data Dosen</h2>
+              <p class="lead">Daftar Informasi mengenai Data Dosen</p>
+            </div>
+              
+            <div class="col-md-12">
+              <h4 class="mb-3">User Data  <button class="btn btn-md btn-primary" v-on:click="resetForm()">Create new Dosen</button>
+              </h4>
+                <table class="table table-striped">
+                    <tr>
+                        <th>NID</th>
+                        <th>Nama</th>
+                        <th>Email</th>
+                        <th>ID_MatKul</th>
+                        <th>Nomor Telp</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
+                    </tr>
+                    <tr v-for="dsn in dosen">
+                        <td>{{ dsn.NID }}</td>
+                        <td>{{ dsn.Nama }}</td>
+                        <td>{{ dsn.Email}}</td>
+                        <td>{{ dsn.ID_MatKul }}</td>
+                        <td>{{ dsn.No_Dosen }}</td>
+                        <td><button class="btn btn-md btn-warning" v-on:click="getEdit(dsn)">Edit</button></td>
+                        <td><button class="btn btn-danger" v-on:click="getDelete(dsn)">Delete</button></td>
+                    </li>
+                </table>
+
+                <div v-if="message" class="alert alert-success" role="alert">
+                    {{ message }}
+                </div>
+                
+            
+                <h4 class="mb-3">Input Data</h4>
+                <form class="needs-validation" novalidate>
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="Nama">Nama</label>
+                      <input  v-model="Nama" type="text" class="form-control" id="Nama" placeholder="" value="" required>
+                      <div class="invalid-feedback">
+                        Input Name.
+                      </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for=Email">Email</label>
+                      <input v-model="Email" type="email" class="form-control" id="Email" value="" required>
+                      <div class="invalid-feedback">
+                        Email must available
+                      </div>
+                    </div>
+                  </div>
+      
+                  <div class="mb-3">
+                    <label for="ID_MatKul">ID_MatKul</label>
+                      <input  v-model="ID_MatKul" type="text" class="form-control" id="ID_MatKul" placeholder="" value="" required>
+                  </div>
+      
+                  <div class="mb-3">
+                    <label for="No_Dosen">Nomor Telp</label>
+                      <input  v-model="No_Dosen" type="text" class="form-control" id="No_Dosen" placeholder="" value="" required>
+                  </div>
+      
+                  </div>
+                
+                  <hr class="mb-4">
+                  <button v-if="!editMode && !deleteMode" v-on:click="createDosen" class="btn btn-primary btn-lg btn-block" type="submit">Submit Data</button>
+                  <button v-if="editMode" v-on:click="updateDosen" class="btn btn-warning btn-lg btn-block" type="submit">Update Data</button>
+                  <button v-if="deleteMode" v-on:click="deleteDosen" class="btn btn-danger btn-lg btn-block" type="submit">Delete Data</button>
+                  
+                </form>
+              </div>
+            </div>
+
+            <footer class="my-5 pt-5 text-muted text-center text-small">
+                <p class="mb-1">&copy; 2021 FTI UNAI</p>
+                <ul class="list-inline">
+                  <li class="list-inline-item"><a href="#">Privacy</a></li>
+                  <li class="list-inline-item"><a href="#">Terms</a></li>
+                  <li class="list-inline-item"><a href="#">Support</a></li>
+                </ul>
+              </footer>
+
+    </div>
+    
+
+   <!-- Axios -->
+   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+   <script>
+       var app = new Vue ({
+           el: '#app',
+           data: {
+               errors: [],
+               message: null,
+               dosen:[],
+               userIdEdit: null,
+               userIdDelete: null,
+               editMode: false,
+               deleteMode: false,
+               Nama: '',
+               Email: '',
+               ID_MatKul: '',
+               No_Dosen: ''
+           },
+            mounted: function() {
+                this.getDosen();
+            },
+            methods: {
+                getDosen() {
+                    axios.get('https://62244d2b3af069a0f9b2cdf5.mockapi.io/dosen')
+                        .then(response => {
+                            this.dosen = response.data;
+                            console.log(response);
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        });
+                },
+                createDosen: function(){
+                    axios.post('https://62244d2b3af069a0f9b2cdf5.mockapi.io/dosen', {
+                        Nama: this.Nama,
+                        Email : this.Email,
+                        ID_MatKul : this.ID_MatKul,
+                        No_Dosen : this.No_Dosen
+                      })
+                    .then(response => {
+                            this.getMhs();
+                            this.message = "Your data has been submitted";
+                            console.log(response);
+                    })
+                    .catch(error => {
+                            console.log(error);
+                    });
+                },
+                resetForm: function () {
+                  this.message = null;
+                    this.editMode = false;
+                    this.deleteMode = false;
+                    this.userIdEdit = null;
+                    this.Nama = null;
+                    this.Email = null;
+                    this.ID_MatKul = null;
+                    this.No_Dosen = null;
+                },
+                getEdit: function (dosen) {
+                    this.message = null;
+                    this.editMode = true;
+                    this.deleteMode = false;
+                    this.userIdEdit = dosen.NID;
+                    this.Nama = dosen.Nama;
+                    this.Email = dosen.Email;
+                    this.ID_MatKul = dosen.ID_MatKul;
+                    this.No_Dosen = dosen.No_Dosen;
+                  },
+                getDelete: function (dosen) {
+                  this.message = null;
+                    this.deleteMode = true;
+                    this.editMode = false;
+                    this.userIdDelete = dosen.NID;
+                    this.Nama = dosen.Nama;
+                    this.Email = dosen.Email;
+                    this.ID_MatKul = dosen.ID_MatKul;
+                    this.No_Dosen = dosen.No_Dosen;},
+                updateDosen: function () {
+                    axios.put(`https://62244d2b3af069a0f9b2cdf5.mockapi.io/dosen/${this.userIdEdit}`, {
+                        Nama: this.Nama,
+                        Email : this.Email,
+                        ID_MatKul : this.ID_MatKul,
+                        No_Dosen : this.No_Dosen
+                     })
+                        .then(res => {
+                            // handle success
+                            this.message = "Your data has been updated";
+                            this.getDosen();
+                        })
+                        .catch(err => {
+                            // handle error
+                            console.log(err);
+                        })
+                },
+                // Delete mahasiswa
+                deleteDosen: function () {
+                    axios.delete(`https://62244d2b3af069a0f9b2cdf5.mockapi.io/dosen/${this.userIdDelete}`)
+                        .then(res => {
+                            // handle success
+                            this.message = "Your data has been deleted";
+                            this.getDosen();
+                        })
+                        .catch(err => {
+                            // handle error
+                            console.log(err);
+                        })
+                }
+             }
+        })
+        
+    </script>
+
+
+</body>
+</html>
